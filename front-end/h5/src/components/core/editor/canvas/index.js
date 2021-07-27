@@ -1,10 +1,19 @@
 import { mapState, mapActions } from 'vuex'
+import { defineComponent } from '@vue/composition-api'
 
 import RenderEditCanvas from './edit'
 import RenderPreviewCanvas from './preview'
+import { useEditor } from './editor'
 
-export default {
+export default defineComponent({
   name: 'EditorCanvas',
+  setup (props) {
+    const editor = useEditor()
+
+    return {
+      editor
+    }
+  },
   data: () => ({
     isPreviewMode: false
   }),
@@ -14,8 +23,7 @@ export default {
       editingElement: state => state.editingElement,
       elements: state => state.editingPage.elements,
       pages: state => state.work.pages,
-      work: state => state.work,
-      scaleRate: state => state.scaleRate
+      work: state => state.work
     }),
     ...mapState('loading', [
       'saveWork_loading',
@@ -57,7 +65,7 @@ export default {
           <a-radio-button label={false} value={false}>{this.$t('editor.centerPanel.mode.edit')}</a-radio-button>
           <a-radio-button label={true} value={true}>{this.$t('editor.centerPanel.mode.preview')}</a-radio-button>
         </a-radio-group>
-        <a-layout-content style={{ transform: `scale(${this.scaleRate})`, 'transform-origin': 'center top' }}>
+        <a-layout-content style={{ transform: `scale(${this.editor.scaleRate})`, 'transform-origin': 'center top' }}>
           <div
             class='canvas-wrapper'
             style={{
@@ -77,4 +85,4 @@ export default {
       </a-layout>
     )
   }
-}
+})

@@ -1,6 +1,6 @@
 import undoRedoHistory from 'core/store/plugins/undo-redo/History'
 
-const fixedTools = [
+const fixedTools = (editor) => [
   {
     i18nTooltip: 'editor.fixedTool.undo',
     icon: 'mail-reply',
@@ -34,21 +34,21 @@ const fixedTools = [
   {
     i18nTooltip: 'editor.fixedTool.importPSD',
     text: 'Ps',
-    icon: '', // 优先级: icon > text > i18nTooltip
+    icon: '', // priority: icon > text > i18nTooltip
     action: '',
     disabled: true
   },
   {
     i18nTooltip: 'editor.fixedTool.zoomOut',
     icon: 'plus',
-    action: function () { this.updateScaleRate(0.25) },
+    action: function () { editor.scaleRate += 0.25 },
     hotkey: 'ctrl&=,⌘&=',
     hotkeyTooltip: '(ctrl +)'
   },
   {
     i18nTooltip: 'editor.fixedTool.zoomIn',
     icon: 'minus',
-    action: function () { this.updateScaleRate(-0.25) },
+    action: function () { editor.scaleRate -= 0.25 },
     hotkey: 'ctrl&-,⌘&-',
     hotkeyTooltip: '(ctrl -)'
   },

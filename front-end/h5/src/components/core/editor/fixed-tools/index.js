@@ -1,18 +1,21 @@
 import { mapActions, mapState } from 'vuex'
 import hotkeys from 'hotkeys-js'
+import { defineComponent } from '@vue/composition-api'
+import { useEditor } from '../canvas/editor'
 import fixedTools from './options'
 
-export default {
-  computed: {
-    ...mapState('editor', {
-      scaleRate: state => state.scaleRate
-    })
+export default defineComponent({
+  setup (props) {
+    const editor = useEditor()
+
+    return {
+      editor
+    }
   },
   methods: {
     ...mapActions('editor', [
       'pageManager',
       'elementManager',
-      'updateScaleRate',
       'downloadPoster'
     ])
   },
@@ -25,7 +28,7 @@ export default {
       >
         <a-button-group style={{ display: 'flex', flexDirection: 'column' }}>
           {
-            fixedTools.map(tool => (
+            fixedTools(this.editor).map(tool => (
               <a-tooltip
                 effect="dark"
                 placement="left"
@@ -45,7 +48,7 @@ export default {
                       : (tool.text || this.$t(tool.i18nTooltip))
                   }
                 </a-button>
-                { tool.icon === 'minus' && <div style={{ fontSize: '12px', textAlign: 'center' }}>{this.scaleRate * 100}%</div>}
+                { tool.icon === 'minus' && <div style={{ fontSize: '12px', textAlign: 'center' }}>{this.editor.scaleRate * 100}%</div>}
               </a-tooltip>
             ))
           }
@@ -54,7 +57,7 @@ export default {
     )
   },
   mounted () {
-    fixedTools.map(tool => {
+    fixedTools(this.editor).map(tool => {
       tool.hotkey && hotkeys(tool.hotkey, { splitKey: '&' }, (event, handler) => {
         event.preventDefault()
         event.stopPropagation()
@@ -62,4 +65,4 @@ export default {
       })
     })
   }
-}
+})

@@ -3,7 +3,7 @@ import { loadLanguageAsync } from '@/locales'
 const i18n = {
   namespaced: true,
   state: {
-    lang: 'zh-CN'
+    lang: 'en'
   },
   mutations: {
     SET_LANG: (state, lang) => {
