@@ -1,6 +1,16 @@
 module.exports = {
   presets: [
-    '@vue/app'
+    '@vue/app',
+    [
+      '@vue/babel-preset-jsx',
+      {
+        compositionAPI: true,
+        functional: false,
+        injectH: false,
+        vModel: true,
+        vOn: false
+      }
+    ]
     // ['es2015', { 'modules': false }]
   ],
   'plugins': [

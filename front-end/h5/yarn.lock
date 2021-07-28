@@ -971,10 +971,10 @@
     babel-plugin-module-resolver "3.2.0"
     core-js "^2.6.5"
 
-"@vue/babel-preset-jsx@^1.0.0":
+"@vue/babel-preset-jsx@^1.0.0", "@vue/babel-preset-jsx@^1.2.4":
   version "1.2.4"
-  resolved "https://registry.npm.taobao.org/@vue/babel-preset-jsx/download/@vue/babel-preset-jsx-1.2.4.tgz?cache=0&sync_timestamp=1603806821600&other_urls=https%3A%2F%2Fregistry.npm.taobao.org%2F%40vue%2Fbabel-preset-jsx%2Fdownload%2F%40vue%2Fbabel-preset-jsx-1.2.4.tgz#92fea79db6f13b01e80d3a0099e2924bdcbe4e87"
-  integrity sha1-kv6nnbbxOwHoDToAmeKSS9y+Toc=
+  resolved "https://registry.yarnpkg.com/@vue/babel-preset-jsx/-/babel-preset-jsx-1.2.4.tgz#92fea79db6f13b01e80d3a0099e2924bdcbe4e87"
+  integrity sha512-oRVnmN2a77bYDJzeGSt92AuHXbkIxbf/XXSE3klINnh9AXBmVS1DGa1f0d+dDYpLfsAKElMnqKTQfKn7obcL4w==
   dependencies:
     "@vue/babel-helper-vue-jsx-merge-props" "^1.2.1"
     "@vue/babel-plugin-transform-vue-jsx" "^1.2.1"
@@ -1573,7 +1573,7 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
-ant-design-vue@^1.2.4, ant-design-vue@^1.3.14:
+ant-design-vue@^1.2.4, ant-design-vue@^1.7.6:
   version "1.7.6"
   resolved "https://registry.nlark.com/ant-design-vue/download/ant-design-vue-1.7.6.tgz#976a84ff037c2e5f0586dcd697eafb8cf7983b1e"
   integrity sha1-l2qE/wN8Ll8FhtzWl+r7jPeYOx4=

@@ -65,7 +65,6 @@ export default {
   render (h) {
     return (
       <a-menu
-        slot="action-menu"
         theme="dark"
         mode="horizontal"
         defaultSelectedKeys={['2']}

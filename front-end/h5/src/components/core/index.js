@@ -99,7 +99,7 @@ const CoreEditor = {
     return (
       <a-layout>
         <Header>
-          <EditorActionMenu slot="action-menu" onPreview={this.handlePreview} />
+          <EditorActionMenu onPreview={this.handlePreview} />
         </Header>
         <a-layout>
           {/* <EditorLeftPanel /> */}

@@ -3,7 +3,7 @@
     <LogoOfHeader />
     <div style="float:right;">
       <Links />
-    <slot name="action-menu"></slot>
+    <slot></slot>
     <LangSelect />
     </div>
   </a-layout-header>
