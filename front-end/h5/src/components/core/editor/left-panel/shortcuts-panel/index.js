@@ -2,137 +2,172 @@ import ShortcutButton from './shortcut-button'
 import UsageTip from './usage-tip'
 import LoadNpmPlugins from './load-npm-plugins.vue'
 import langMixin from 'core/mixins/i18n'
-import dragMixin from 'core/mixins/drag'
 import loadPluginsMixin from 'core/plugins/index'
-import { mapActions } from 'vuex'
+import {
+  defineComponent,
+  reactive,
+  toRefs,
+  ref,
+  computed
+} from '@vue/composition-api'
 
-export default {
-  mixins: [langMixin, dragMixin, loadPluginsMixin],
-  data: () => ({
-    npmPackages: []
-  }),
-  methods: {
-    ...mapActions('editor', [
-      'elementManager',
-      'pageManager',
-      'saveWork',
-      'setEditingPage'
-    ]),
-    ...mapActions('loading', {
-      updateLoading: 'update'
-    }),
-    /**
-     * !#zh 点击插件，copy 其基础数据到组件树（中间画布）
-     * #!en click the plugin shortcut, create new Element with the plugin's meta data
-     * pluginInfo {Object}: 插件列表中的基础数据, {name}=pluginInfo
-     *
-     * elementShortcutConfig: PluginListItem = {
-      name: String,
-      shortcutProps: {}
-     }
-     */
-    clone (elementShortcutConfig) {
-      this.elementManager({
+let dragDom = null
+
+let dragConfig = {
+  isPreDrag: false, // Prepare to drag
+  isDrag: false, // Official drag
+  origin: {
+    clientY: 0, // When the mouse is pressed down
+    clientX: 0,
+    layerX: 0, // Mouse. X relative to the upper left corner of the element .left offset
+    layerY: 0 // The mouse. Y is offset from the upper left corner of the element. TOP
+  }
+}
+
+export default defineComponent({
+  mixins: [langMixin, loadPluginsMixin],
+  props: { elementManager: Function },
+  setup(props) {
+    const state = reactive({
+      npmPackages: []
+    })
+
+    const dragElement = ref(null)
+
+    console.log('🇻🇳 ~ file: index.js ~ line 76 ~ root.$store', root.$store)
+    function mousedown(e) {
+      // Mouse. X is relative to the offset of the upper left corner of the element
+      const { layerX, layerY } = e
+      dragConfig.origin.layerX = layerX
+      dragConfig.origin.layerY = layerY
+      dragConfig.origin.clientX = e.clientX
+      dragConfig.origin.clientY = e.clientY
+
+      dragDom.style.position = 'absolute'
+      dragDom.style.left = e.clientX - layerX + 'px'
+      dragDom.style.top = e.clientY - layerY + 'px'
+      dragDom.classList.add('dragging-dom-ele', 'hidden')
+
+      dragConfig.isPreDrag = true
+    }
+
+    function mousemove(e) {
+      dragDom.classList.remove('hidden')
+      const { layerX, layerY } = dragConfig.origin
+      dragDom.style.left = e.clientX - layerX + 'px'
+      dragDom.style.top = e.clientY - layerY + 'px'
+    }
+
+    function checkCanMousedown(e, { minOffsetX, minOffsetY, minOffset }) {
+      const offsetX = e.clientX - dragConfig.origin.clientX
+      const offsetY = e.clientY - dragConfig.origin.clientY
+
+      return (
+        offsetX >= (minOffsetX || minOffset) ||
+        offsetY >= (minOffsetY || minOffset)
+      )
+    }
+
+    function clone(elementShortcutConfig) {
+      props.elementManager({
         type: 'add',
         value: elementShortcutConfig
       })
     }
-    /**
-     * #!zh 渲染多个插件的快捷方式
-     * #!en render shortcuts for multi plugins
-     * @param {Object} group: {children, title, icon}
-     */
-    // renderMultiShortcuts (group) {
-    //   const plugins = group.children
-    //   return <a-popover
-    //     placement="bottom"
-    //     class="shortcust-button"
-    //     trigger="hover">
-    //     <a-row slot="content" gutter={20} style={{ width: '400px' }}>
-    //       {
-    //         plugins.sort().map(item => (
-    //           <a-col span={6}>
-    //             <ShortcutButton
-    //               clickFn={this.onClickShortcut.bind(this, item)}
-    //               title={item.title}
-    //               faIcon={item.icon}
-    //             />
-    //           </a-col>
-    //         ))
-    //       }
-    //     </a-row>
-    //     <ShortcutButton
-    //       title={group.title}
-    //       faIcon={group.icon}
-    //     />
-    //   </a-popover>
-    // },
-    /**
-     * #!zh: 渲染单个插件的快捷方式
-     * #!en: render shortcut for single plugin
-     * @param {Object} group: {children, title, icon}
-     */
-    // renderSingleShortcut ({ children }) {
-    //   const [plugin] = children
-    //   return <ShortcutButton
-    //     clickFn={this.onClickShortcut.bind(this, plugin)}
-    //     title={plugin.title}
-    //     faIcon={plugin.icon}
-    //   />
-    // },
-    /**
-     * #!zh: 在左侧或顶部导航上显示可用的组件快捷方式，用户点击/拖拽之后，即可将其添加到中间画布上
-     * #!en: render shortcust at the sidebar or the header. if user click/drag the shortcut, the related plugin will be added to the canvas
-     * @param {Object} group: {children, title, icon}
-     */
-    // renderShortCutsPanel (groups) {
-    //   return (
-    //     <a-row gutter={20}>
-    //       {
-    //         groups.sort().map(group => (
-    //           <a-col span={12} style={{ marginTop: '10px' }}>
-    //             {
-    //               group.children.length === 1
-    //                 ? this.renderSingleShortcut(group)
-    //                 : this.renderMultiShortcuts(group)
-    //             }
-    //           </a-col>
-    //         ))
-    //       }
-    //     </a-row>
-    //   )
-    // }
+
+    function mouseup(e) {
+      const { layerX, layerY } = dragConfig.origin
+      document.body.removeChild(dragDom)
+      dragDom = null
+
+      const canMousedown = checkCanMousedown(e, { minOffset: 10 })
+      if (!canMousedown) return
+
+      const canvasWrapper = document.querySelector('.canvas-wrapper')
+      const position = canvasWrapper.getBoundingClientRect()
+      dragElement.value &&
+        clone({
+          ...dragElement.value,
+          dragStyle: {
+            left: e.clientX - layerX - position.left,
+            top: e.clientY - layerY - position.top
+          }
+        })
+    }
+
+    function handleDragStartFromMixin(element, e) {
+      if (e.button !== 0) return
+      if (dragDom) {
+        document.body.removeChild(dragDom)
+        dragDom = null
+      }
+      dragElement.value = element
+      dragDom = e.target.cloneNode(true)
+      document.body.appendChild(dragDom)
+
+      const handleMouseMove = evt => {
+        mousemove(evt)
+      }
+
+      const handleMouseUp = evt => {
+        mouseup(evt)
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
+      }
+
+      mousedown(e)
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    }
+
+    return {
+      ...toRefs(state),
+      handleDragStartFromMixin,
+      clone
+    }
   },
-  /**
-   * #!zh: 在左侧或顶部导航上显示可用的组件快捷方式，用户点击/拖拽之后，即可将其添加到中间画布上
-   * #!en: render shortcust at the sidebar or the header.
-   * if user click/drag the shortcut, the related plugin will be added to the canvas
-   */
-  render (h) {
+
+  methods: {
+    // ...mapActions('editor', [
+    //   'elementManager',
+    //   'pageManager',
+    //   'saveWork',
+    //   'setEditingPage'
+    // ]),
+    // ...mapActions('loading', {
+    //   updateLoading: 'update'
+    // })
+  },
+
+  render(h) {
     // return this.renderShortCutsPanel(this.groups)
     return (
-      <a-row gutter={10} style="max-height: calc(100vh - 150px);overflow: auto;margin:0;">
+      <a-row
+        gutter={10}
+        style="max-height: calc(100vh - 150px);overflow: auto;margin:0;"
+      >
         <UsageTip />
-        {
-          [].concat(this.pluginsList, this.npmPackages)
-            .filter(plugin => plugin.visible)
-            .map(plugin => (
-              <a-col span={12} style={{ marginTop: '10px' }}>
-                <ShortcutButton
-                  clickFn={this.clone.bind(this, plugin)}
-                  mousedownFn={this.handleDragStartFromMixin.bind(this, plugin)}
-                  // title={plugin.title}
-                  title={plugin.i18nTitle[this.currentLang] || plugin.title}
-                  faIcon={plugin.icon}
-                  disabled={plugin.disabled}
-                />
-              </a-col>
-            ))
-        }
-        <LoadNpmPlugins onLoadComplete={npmPackages => {
-          this.npmPackages = npmPackages
-        }} />
+        {[]
+          .concat(this.pluginsList, this.npmPackages)
+          .filter(plugin => plugin.visible)
+          .map(plugin => (
+            <a-col span={12} style={{ marginTop: '10px' }}>
+              <ShortcutButton
+                clickFn={this.clone.bind(this, plugin)}
+                mousedownFn={e => this.handleDragStartFromMixin(plugin, e)}
+                // title={plugin.title}
+                title={plugin.i18nTitle[this.currentLang] || plugin.title}
+                faIcon={plugin.icon}
+                disabled={plugin.disabled}
+              />
+            </a-col>
+          ))}
+        <LoadNpmPlugins
+          onLoadComplete={npmPackages => {
+            this.npmPackages = npmPackages
+          }}
+        />
       </a-row>
     )
   }
-}
+})
