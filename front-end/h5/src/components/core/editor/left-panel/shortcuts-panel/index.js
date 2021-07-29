@@ -34,7 +34,6 @@ export default defineComponent({
 
     const dragElement = ref(null)
 
-    console.log('🇻🇳 ~ file: index.js ~ line 76 ~ root.$store', root.$store)
     function mousedown(e) {
       // Mouse. X is relative to the offset of the upper left corner of the element
       const { layerX, layerY } = e
